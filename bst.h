@@ -339,24 +339,25 @@ typename BinarySearchTree<Key, Value>::iterator&
 BinarySearchTree<Key, Value>::iterator::operator++()
 {
   // TODO
-    if (!current_) {
-        return *this;  // End iterator, do nothing
-    }
+  if (!current_) {
+    return *this;  // End iterator, do nothing
+  }
 
-    if (current_->getRight()) {
-        current_ = current_->getRight();
-        while (current_->getLeft()) {
-            current_ = current_->getLeft();
-        }
-    } else {
-        Node<Key, Value>* parent = current_->getParent();
-        while (parent && current_ == parent->getRight()) {
-            current_ = parent;
-            parent = parent->getParent();
-        }
-        current_ = parent;
+  if (current_->getRight()) {
+    current_ = current_->getRight();
+    while (current_->getLeft()) {
+      current_ = current_->getLeft();
     }
-    return *this;
+  } 
+  else {
+    Node<Key, Value>* parent = current_->getParent();
+    while (parent && current_ == parent->getRight()) {
+      current_ = parent;
+      parent = parent->getParent();
+    }
+    current_ = parent;
+  }
+  return *this;
 
 }
 
@@ -476,38 +477,39 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 
   // If the tree is empty, make the new node the root and exit
   if (root_ == nullptr) {
-      root_ = newNode;
-      return;
+    root_ = newNode;
+    return;
   }
 
-  // Start traversing the tree from the root
+
   Node<Key, Value>* currentNode = root_;
   while (currentNode != nullptr) {
-      // Compare the keys to determine the traversal direction
-      if (keyValuePair.first < currentNode->getKey()) {
-          // Go left if there's no left child, insert the new node there
-          if (currentNode->getLeft() == nullptr) {
-              currentNode->setLeft(newNode);
-              newNode->setParent(currentNode); // Set parent for the new node
-              break; // Exit the loop after insertion
-          }
-          // Move to the left child to continue traversal
-          currentNode = currentNode->getLeft();
-      } else if (keyValuePair.first > currentNode->getKey()) {
-          // Go right if there's no right child, insert the new node there
-          if (currentNode->getRight() == nullptr) {
-              currentNode->setRight(newNode);
-              newNode->setParent(currentNode); // Set parent for the new node
-              break; // Exit the loop after insertion
-          }
-          // Move to the right child to continue traversal
-          currentNode = currentNode->getRight();
-      } else {
-          // If the key already exists, update the node's value
-          currentNode->setValue(keyValuePair.second);
-          delete newNode; // Delete the created node to prevent memory leak
-          return; // Exit the function as the key is already present
+
+    if (keyValuePair.first < currentNode->getKey()) {
+      // Go left if there's no left child, insert the new node there
+      if (currentNode->getLeft() == nullptr) {
+        currentNode->setLeft(newNode);
+        newNode->setParent(currentNode); // Set parent for the new node
+        break; // Exit the loop after insertion
       }
+      // Move to the left child to continue traversal
+      currentNode = currentNode->getLeft();
+    } 
+     else if (keyValuePair.first > currentNode->getKey()) {
+      // Go right if there's no right child, insert the new node there
+      if (currentNode->getRight() == nullptr) {
+        currentNode->setRight(newNode);
+        newNode->setParent(currentNode); // Set parent for the new node
+        break; // Exit the loop 
+      }
+      // Move to the right child to continue traversal
+      currentNode = currentNode->getRight();
+    } 
+    else {
+      currentNode->setValue(keyValuePair.second);
+      delete newNode; //memory leak
+      return; 
+    }
   }
 
 }
@@ -523,34 +525,31 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
 {
     // TODO
     Node<Key, Value> *targetNode = internalFind(key);
-if (!targetNode) return; // Node not found, exit the function
+  if (!targetNode) return; // Node not found, exit the function
 
-// Handling node with two children
-if (targetNode->getLeft() && targetNode->getRight()) {
-  Node<Key, Value> *inOrderPred = predecessor(targetNode);
-  nodeSwap(inOrderPred, targetNode); // Swap the nodes
-  if (!targetNode->getParent()) root_ = inOrderPred; // Update root if necessary
-}
+  if (targetNode->getLeft() && targetNode->getRight()) {
+    Node<Key, Value> *inOrderPred = predecessor(targetNode);
+    nodeSwap(inOrderPred, targetNode); // Swap the nodes
+    if (!targetNode->getParent()) root_ = inOrderPred; // Update root if necessary
+  }
 
-Node<Key, Value> *replacementNode = nullptr; // The child node that will replace the removed node
-Node<Key, Value> *parentNode = targetNode->getParent(); // Parent of the node to remove
+  Node<Key, Value> *replacementNode = nullptr; // The child node that will replace the removed node
+  Node<Key, Value> *parentNode = targetNode->getParent(); // Parent of the node to remove
 
-// Determine the replacement node
-if (targetNode->getRight()) replacementNode = targetNode->getRight();
-else if (targetNode->getLeft()) replacementNode = targetNode->getLeft();
+  // Determine the replacement node
+  if (targetNode->getRight()) replacementNode = targetNode->getRight();
+  else if (targetNode->getLeft()) replacementNode = targetNode->getLeft();
 
-// Node with one or no children
-if (replacementNode) replacementNode->setParent(parentNode); // Set the parent for the replacement node
+  // Node with one or no children
+  if (replacementNode) replacementNode->setParent(parentNode); // Set the parent for the replacement node
 
-if (!parentNode) {
-  root_ = replacementNode; // If there's no parent, the replacement node becomes the new root
-} else {
-  // Determine if the target node is the left or right child and update the parent's pointer
-  if (targetNode == parentNode->getLeft()) parentNode->setLeft(replacementNode);
-  else parentNode->setRight(replacementNode);
-}
+  if (!parentNode) {
+    root_ = replacementNode; 
+    if (targetNode == parentNode->getLeft()) parentNode->setLeft(replacementNode);
+    else parentNode->setRight(replacementNode);
+  }
 
-delete targetNode; // Free the memory occupied by the target node
+  delete targetNode; 
 
 }
 
